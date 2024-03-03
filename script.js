@@ -28,54 +28,29 @@ var game = new Phaser.Game(config);
 var worldWidth = 9600;
 
 function preload() {
-    //Завантажили асетси 2
-    this.load.image('fon', 'assets/fon.png');
     this.load.image('fon+', 'assets/fon+.png');
     this.load.image('ground', 'assets/platform.png');
     this.load.image('star', 'assets/star.png');
     this.load.image('bomb', 'assets/bomb.png');
-    this.load.spritesheet('dude',
-        'assets/dude.png',
+    this.load.spritesheet('dude', 'assets/dude.png',
         { frameWidth: 32, frameHeight: 48 }
     );
 }
 
 function create() {
-    //Створюємо небо 3
-    //this.add.image(0, 0, 'fon').setOrigin(0,0);
+
     this.add.tileSprite(0,0, worldWidth, 1080, "fon+").setOrigin(0,0);
-    //Додаємо платформи 4
     platforms = this.physics.add.staticGroup();
-    //Земля на всю ширину екрану
     for (var x = 0; x < worldWidth; x = x + 384) {
         console.log(x)
         platforms.create(x, 1080 - 93, 'ground').setOrigin(0,0).refreshBody();
     }
-
-   // platforms.create(900, 900, 'ground').setScale(2).refreshBody();
-
-    //platforms.create(600, 400, 'ground');
-    //platforms.create(500, 250, 'ground');
-    //platforms.create(750, 220, 'ground');
-    //Додавання персонажа та його анімацій 5
     player = this.physics.add.sprite(1500, 900, 'dude');
     player.setBounce(0.2);
     player.setCollideWorldBounds(false);
-    //Налаштування камери
     this.cameras.main.setBounds(0,0,worldWidth, 1080);
     this.physics.world.setBounds(0,0,worldWidth, 1080);
-    //Слідкування камери за гравцем
     this.cameras.main.startFollow(player);
-
-    var x = 0;
-    while (x < worldWidth) {
-        var y = Phaser.Math.FloatBetween(540, 1080); // Змінено діапазон висоти платформ
-        platforms.create(x, y, 'ground').setScale(0.5).refreshBody(); // Зменшено масштаб платформ
-        x += Phaser.Math.FloatBetween(200, 800); // Збільшено відстань між платформами
-    }
-    
-
-
 
     this.anims.create({
         key: 'left',
@@ -97,9 +72,7 @@ function create() {
         repeat: -1
     });
     
-    //Додали курсор 6
     cursors = this.input.keyboard.createCursorKeys();
-    //Додали зірочки 8
     stars = this.physics.add.group({
         key: 'star',
         repeat: 111,
@@ -114,12 +87,10 @@ function create() {
     bombs = this.physics.add.group();
     scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
-    //Додали зіткнення зірок з платформами 9
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(stars, platforms);
     this.physics.add.collider(bombs, platforms);
 
-    //Перевіримо чи перекривається персонаж зіркою 10
     this.physics.add.overlap(player, stars, collectStar, null, this);
     this.physics.add.collider(player, bombs, hitBomb, null, this);
 }
@@ -130,7 +101,6 @@ function update()
     {
         return;
     }
-    //Управління персонажем 7
     if (cursors.left.isDown) 
     {
         player.setVelocityX(-160);
@@ -153,14 +123,12 @@ function update()
     }
 
 }
-//Додали збирання зірок персонажем 11
 function collectStar(player, star) 
 {
     star.disableBody(true, true);
     score += 10;
     scoreText.setText('Score: ' + score);
 
-    // Створення бомби
     var x = Phaser.Math.Between(0, worldWidth);
     var y = Phaser.Math.Between(0, config.height);
     var bomb = bombs.create(x, 0, 'bomb');
@@ -169,9 +137,8 @@ function collectStar(player, star)
     bomb.setCollideWorldBounds(true);
     bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
 
-    if (stars.countActive(true) === 0) // Перевірка, чи всі зірки зібрані
+    if (stars.countActive(true) === 0)
     {
-        // Створення нових зірок
         stars.children.iterate(function (child) {
             child.enableBody(true, child.x, 0, true, true);
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
